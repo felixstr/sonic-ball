@@ -48,11 +48,8 @@ void draw()
   checkMove(); // is ball moving? (inMove)
   if (inMove) {
     record();
-    println("**** RECORDINGs ****");
   } else {
     play();
-    println("**** PLAYING ****");
-    
   }
 }
 
@@ -93,7 +90,9 @@ void record() {
     trackMillis = false;
   }
   
-  if(m + 1 == millis()){
+  if(m + 1 < millis()){
+        println("**** RECORDINGs ****");
+
     gyroMagni.add(gyro.mag());
     accelMagni.add(accel.mag()); 
    trackMillis = false;
@@ -106,25 +105,28 @@ void play() {
   // myMidiBus.sendControllerChange(1, 20, 200);
   
   if(trackMillis == true){
-    mm = 0;
     mm = millis();
     trackMillis = false;
   }
   
-  if(m + 1 == millis()){
-    if (mmCount >= gyroMagni.size()) {
-      mmCount = gyroMagni.size()-1;
-    } else {
-      mmCount++;
-    }
-    println(gyroMagni[mmCount]);
+  if(mm + 1 < millis()){
+    println("**** PLAYING ****");
+    if (mmCount > gyroMagni.size()) mmCount = gyroMagni.size()-1;
+    if (mmCount < gyroMagni.size()) mmCount++;
+    
+    println( gyroMagni.get(mmCount));
+    
+
+    
     /*
     myMidiBus.sendNoteOn(0, 31, 127);
     myMidiBus.sendControllerChange(0, 74, map(gyroMagni[mmCount], ));
     gyroMagni[]
     accelMagni.add(accel.mag()); 
-     trackMillis = false;
-     */
+    trackMillis = false;
+    */
+     
+     trackMillis = true;
   }
   
   myMidiBus.sendNoteOn(0, 31, 127);
