@@ -13,6 +13,8 @@ PVector[] accel = new PVector[5]; // Variable to store Accelerometer Data
 PVector[] gyro = new PVector[5];  // Variable to store Gyroscope Data
 int[][] adc = new int[5][4];    // Variable to store Analog Data
 
+boolean[] record = new boolean[5];
+
 void setup()
 {
   size(500, 800);
@@ -46,7 +48,7 @@ void draw()
 }
 
 void calcValue() {
-
+  
 }
 
 void serialEvent(Serial myXbeePort) // Is called everytime there is new data to read
@@ -98,6 +100,7 @@ void drawGraph(int index, int x, int y)
   rect(x, y+=10, map(accel[index].y, -32768, +32767, -64, 63), 10);
   text("Accel Z  "+accel[index].z, x-width/2+10, y+20); 
   rect(x, y+=10, map(accel[index].z, -32768, +32767, -64, 63), 10);
+  
   text("Accel Mag  "+accel[index].mag(), x-width/2+10, y+20); 
   
   y+=20;
