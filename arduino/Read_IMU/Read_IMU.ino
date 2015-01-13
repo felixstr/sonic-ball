@@ -43,13 +43,13 @@ void loop()
 
   //If MPU6050 is attached, read the acceleromter and gyroscope values
   accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-
+/*
   //Read the analog ports
   adc0 = analogRead(0);
   adc1 = analogRead(1);
   adc2 = analogRead(2);
   adc3 = analogRead(3);
-
+*/
   //Sending start byte 
   Serial.write(0x7e); 
   //Sending Address
@@ -68,7 +68,8 @@ void loop()
   Serial.write((gy >> 8) & 0xff); Serial.write(gy & 0xff);
   //Sending gyroscope Z
   Serial.write((gz >> 8) & 0xff); Serial.write(gz & 0xff);
-  
+ 
+ /* 
   //Sending zero analog Value
   Serial.write((adc0 >> 8) & 0xff); Serial.write(adc0 & 0xff);
   //Sending first analog Value
@@ -77,6 +78,7 @@ void loop()
   Serial.write((adc2 >> 8) & 0xff); Serial.write(adc2 & 0xff);
   //Sending third analog Value
   Serial.write((adc3 >> 8) & 0xff); Serial.write(adc3 & 0xff);
+*/
 }
 
 
