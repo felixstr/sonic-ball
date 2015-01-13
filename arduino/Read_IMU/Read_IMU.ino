@@ -12,7 +12,7 @@
 
 MPU6050 accelgyro;
 
-int xbeeAddress = 3;
+int xbeeAddress = 1;
 
 void setup() 
 {

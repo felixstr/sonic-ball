@@ -14,6 +14,8 @@ int xbeeAddress = 0;           // The Address we are listening to
 PVector accel = new PVector(); // Variable to store Accelerometer Data
 PVector gyro = new PVector();  // Variable to store Gyroscope Data
 
+boolean inMove = false;
+
 void setup()
 {
   size(500, 500);
@@ -31,7 +33,29 @@ void draw()
   background(0);
   drawGraph(width/2, 10);
   myMidiBus.sendControllerChange(1, 20, int(map(gyro.y, -32768, +32767, 0, 127)));
+  
+  
+  checkMove(); // is ball moving? (inMove)
+  if (inMove) {
+    record();
+  } else {
+    play();
+  }
 }
+
+void checkMove() {
+  float mag = gyro.mag();
+  println(mag);
+  if (mag < 1000) {
+    inMove = false;
+  } else {
+    inMove = true;
+  }
+}
+
+void record() {}
+
+void play() {}
 
 void serialEvent(Serial myXbeePort) // Is called everytime there is new data to read
 {
@@ -69,6 +93,7 @@ void drawGraph(int x, int y)
   rect(x, y+=10, map(accel.y, -32768, +32767, -64, 63), 10);
   text("Accel Z  "+accel.z, x-width/2+10, y+20); 
   rect(x, y+=10, map(accel.z, -32768, +32767, -64, 63), 10);
+  
   y+=20;
   text("Gyro X  "+gyro.x, x-width/2+10, y+20); 
   rect(x, y+=10, map(gyro.x, -32768, +32767, -64, 63), 10);
@@ -76,6 +101,9 @@ void drawGraph(int x, int y)
   rect(x, y+=10, map(gyro.y, -32768, +32767, -64, 63), 10);
   text("Gyro Z  "+gyro.z, x-width/2+10, y+20); 
   rect(x, y+=10, map(gyro.z, -32768, +32767, -64, 63), 10);
+  
+  y+=20;
+  text("Moving: "+(inMove ? "true" : "false"), x-width/2+10, y+20);
 
 }
 
