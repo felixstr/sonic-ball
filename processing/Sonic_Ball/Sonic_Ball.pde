@@ -43,14 +43,37 @@ void draw()
   }
 }
 
+int lastMoveStatus = 0;
+boolean  inMoveLast = false;
+boolean  moveChangeFlag = true;
+boolean change = false;
+
 void checkMove() {
   float mag = gyro.mag();
   println(mag);
-  if (mag < 1000) {
-    inMove = false;
-  } else {
-    inMove = true;
+  
+  boolean inMoveCurrent = (mag > 300);
+  inMove = inMoveCurrent;
+  
+  /*
+  boolean inMoveCurrent = (mag > 5000);
+  println("inMoveCurrent: "+inMoveCurrent);
+  println("inMove: "+inMove);
+  
+  if ((inMoveLast && !inMoveCurrent) || (!inMoveLast && inMoveCurrent)) {
+    change = true;
+    lastMoveStatus = millis();
   }
+  println("lastMoveStatus: "+lastMoveStatus);
+  println("change: "+change);
+  
+  if (((millis() - lastMoveStatus) > 5000) && change) {
+    inMove = !inMove;
+    change = false;
+  }
+  
+  inMoveLast = inMoveCurrent;
+  */
 }
 
 void record() {}
@@ -101,6 +124,7 @@ void drawGraph(int x, int y)
   rect(x, y+=10, map(gyro.y, -32768, +32767, -64, 63), 10);
   text("Gyro Z  "+gyro.z, x-width/2+10, y+20); 
   rect(x, y+=10, map(gyro.z, -32768, +32767, -64, 63), 10);
+  text("Gyro Mag  "+gyro.mag(), x-width/2+10, y+20);
   
   y+=20;
   text("Moving: "+(inMove ? "true" : "false"), x-width/2+10, y+20);
