@@ -27,18 +27,24 @@ boolean bREC = true;
 
 //------------------ End Record Movements --------------------
 
+
+
 //--------------------------------------------------------
 void setup()
 {
   size(500, 500);
 
   println(Serial.list()); // Prints the list of serial available devices (Arduino should be on top of the list)
+
   myXbeePort = new Serial(this, Serial.list()[Serial.list().length-1], 38400); // Open a new port and connect with Arduino at 38400 baud
+
   Serial.list();
   myXbeePort.buffer(22);
 
   MidiBus.list(); // List all available Midi devices
   myMidiBus = new MidiBus(this, "", "P5toMIDI"); //Mac
+
+  println("setup end");
 }
 
 //---------------------------------------------------------
@@ -46,16 +52,13 @@ void draw()
 {
   background(0);
   drawGraph(width/2, 10);
-  // myMidiBus.sendControllerChange(1, 20, int(map(gyro.y, -32768, +32767, 0, 127)));
-  
-  
+
   checkMove(); // is ball moving? (inMove)
   if (inMove) {
-     record();
-     mmCount = 0;
-     
+    record();
+    mmCount = 0;
   } else {
-    if( gyroMagni.size() > 0)play(); 
+    play();
   }
 }
 
@@ -68,84 +71,99 @@ boolean change = false;
 
 void checkMove() {
   float mag = gyro.mag();
-  println(mag);
-  
-  boolean inMoveCurrent = (mag > 1000);
-  // inMove = inMoveCurrent;
-  
+  int tolerance = 1000;
+
+  boolean inMoveCurrent = (mag > tolerance);
+
   if ((inMoveLast && !inMoveCurrent) || (!inMoveLast && inMoveCurrent)) {
     change = true;
     lastMoveStatus = millis();
   }
-  println("lastMoveStatus: "+lastMoveStatus);
-  println("change: "+change);
-  
-  if (((millis() - lastMoveStatus) > 1000) && change) {
+  // println("lastMoveStatus: "+lastMoveStatus);
+  // println("change: "+change);
+
+  if (((millis() - lastMoveStatus) > tolerance) && change) {
     inMove = inMoveCurrent;
     change = false;
-   if(inMove == true) gyroMagni.clear();
+
+    if (inMove) {
+      prepareRecord();
+    } else {
+      preparePlay();
+    }
   }
-  
+
   inMoveLast = inMoveCurrent;
- 
 }
 
-//---------------------------------------------------------
+/**
+ * wird vor dem record einmal aufgerufen
+ */
+void prepareRecord() {
+  println("**** RECORDING ****");
+
+  myMidiBus.sendNoteOff(0, 31, 127 );
+  gyroMagni.clear();
+  accelMagni.clear();
+} 
+
+/**
+ * wird vor dem play einmal aufgerufen
+ */
+void preparePlay() {
+  println("**** PLAYING ****");
+
+  myMidiBus.sendNoteOn(0, 31, 127 );
+}
+
+/**
+ * speicher die bewegung in zwei arrayLists
+ */
 void record() {
-  if(trackMillis == true){
+  myMidiBus.sendNoteOff(0, 31, 127 );
+  
+  
+  if (trackMillis == true) {
     m = 0;
     m = millis();
     trackMillis = false;
   }
-  
-  if(m + 1 < millis()){
-        println("**** RECORDINGs ****");
-         
+
+  if (m + 1 < millis()) {
 
     gyroMagni.add(gyro.mag());
     accelMagni.add(accel.mag()); 
-   trackMillis = false;
+    trackMillis = false;
   }
-  
 }
 
-//---------------------------------------------------------
-void play() {
-  // myMidiBus.sendControllerChange(1, 20, 200);
-  
-  if(trackMillis == true){
-    mm = millis();
-    trackMillis = false;
-  }
-  
-  if(mm + 1 < millis()){
-    println("**** PLAYING ****");
-    if (mmCount > gyroMagni.size()) mmCount = gyroMagni.size()-1;
-    if (mmCount < gyroMagni.size()) mmCount++;
-    
-    //println( gyroMagni.get(mmCount));
-    println(mmCount + " von " + gyroMagni.size());
-    println("Value an Stelle: " + mmCount + " :" +   map(gyroMagni.get(mmCount), 500, 40000, 0, 127));
 
-   myMidiBus.sendNoteOn(0, 31,127 );
-   myMidiBus.sendControllerChange(0, 74, (int)map(gyroMagni.get(mmCount), 500, 40000, 0, 127));
-    
-    /*
-    myMidiBus.sendNoteOn(0, 31, 127);
-    myMidiBus.sendControllerChange(0, 74, map(gyroMagni[mmCount], ));
-    gyroMagni[]
-    accelMagni.add(accel.mag()); 
-    trackMillis = false;
-    */
-     
-     trackMillis = true;
+
+/**
+ * spielt die gespeicherte bewegung ab und sendet sie an den midiBus
+ */
+void play()  {
+  if (gyroMagni.size() > 0) {
+  
+    if (trackMillis == true) {
+      mm = millis();
+      trackMillis = false;
+    }
+
+    if (mm + 1 < millis()) {
+      if (mmCount >= gyroMagni.size()-1) mmCount = 0;
+      if (mmCount < gyroMagni.size()) mmCount++;
+
+      //println( gyroMagni.get(mmCount));
+      println(mmCount + " von " + gyroMagni.size());
+      println("Gyro Value an Stelle: " + mmCount + " :" +   map(gyroMagni.get(mmCount), 500, 40000, 0, 127));
+      println("Accel Value an Stelle: " + mmCount + " :" +   map(accelMagni.get(mmCount), 3500, 50000, 0, 127));
+
+
+      myMidiBus.sendControllerChange(0, 74, (int)map(gyroMagni.get(mmCount), 500, 40000, 0, 127));
+      myMidiBus.sendControllerChange(0, 75, (int)map(accelMagni.get(mmCount), 3500, 50000, 0, 127));
+    }
   }
-  
-  myMidiBus.sendNoteOn(0, 31, 127);
-  delay(200);
-  myMidiBus.sendNoteOff(0, 31, 127);
-  delay(200);
-  
 }
 
 //---------------------------------------------------------
@@ -169,12 +187,13 @@ void serialEvent(Serial myXbeePort) // Is called everytime there is new data to 
       gyro.x = int(0.8*gyro.x + 0.2*(int)((inBuffer[7] << 8) | (inBuffer[6] & 0xff)));
       gyro.y = int(0.8*gyro.y + 0.2*(int)((inBuffer[9] << 8) | (inBuffer[8] & 0xff)));
       gyro.z = int(0.8*gyro.z + 0.2*(int)((inBuffer[11] << 8) | (inBuffer[10] & 0xff)));
-
     }
   }
 }
 
 //---------------------------------------------------------
+float highestValue = 0;
+float lowestValue = 20000;
 void drawGraph(int x, int y)
 {
   fill(255);
@@ -186,6 +205,18 @@ void drawGraph(int x, int y)
   rect(x, y+=10, map(accel.y, -32768, +32767, -64, 63), 10);
   text("Accel Z  "+accel.z, x-width/2+10, y+20); 
   rect(x, y+=10, map(accel.z, -32768, +32767, -64, 63), 10);
+
+  text("Accel Mag  "+accel.mag(), x-width/2+10, y+20);
+  /*
+  if (accel.mag() > highestValue) { 
+    highestValue = accel.mag();
+  }
+  println("highestValue  "+highestValue);
+  if (accel.mag() < lowestValue) { 
+    lowestValue = accel.mag();
+  }
+  println("lowestValue  "+lowestValue);
+  */
   
   y+=20;
   text("Gyro X  "+gyro.x, x-width/2+10, y+20); 
@@ -194,12 +225,11 @@ void drawGraph(int x, int y)
   rect(x, y+=10, map(gyro.y, -32768, +32767, -64, 63), 10);
   text("Gyro Z  "+gyro.z, x-width/2+10, y+20); 
   rect(x, y+=10, map(gyro.z, -32768, +32767, -64, 63), 10);
-  
+
   text("Gyro Mag  "+gyro.mag(), x-width/2+10, y+20);
-  
+
   y+=20;
   text("Moving: "+(inMove ? "true" : "false"), x-width/2+10, y+20);
-
 }
 
 //---------------------------------------------------------
@@ -208,16 +238,13 @@ void keyPressed()
   switch(key)
   {
   case 'a':
-    myMidiBus.sendNoteOn(1, 64, 127); // Send a Midi noteOn
-    myMidiBus.sendNoteOff(1, 64, 127); // Send a Midi noteOn
+    myMidiBus.sendNoteOff(0, 31, 127 );
     break;
   case 'c':
 
     break;
   }
 }
-
-
 
 
 
