@@ -23,8 +23,11 @@ ArrayList<Float> accelMagni = new ArrayList<Float>();
 int m;
 int mm;
 int mmCount = 0;
+boolean bREC = true;
 
 //------------------ End Record Movements --------------------
+
+//--------------------------------------------------------
 void setup()
 {
   size(500, 500);
@@ -38,6 +41,7 @@ void setup()
   myMidiBus = new MidiBus(this, "", "P5toMIDI"); //Mac
 }
 
+//---------------------------------------------------------
 void draw()
 {
   background(0);
@@ -47,16 +51,20 @@ void draw()
   
   checkMove(); // is ball moving? (inMove)
   if (inMove) {
-    record();
+     record();
+     mmCount = 0;
+     
   } else {
-    play();
+    if( gyroMagni.size() > 0)play(); 
   }
 }
 
+//---------------------------------------------------------
 int lastMoveStatus = 0;
 boolean  inMoveLast = false;
 boolean  moveChangeFlag = true;
 boolean change = false;
+
 
 void checkMove() {
   float mag = gyro.mag();
@@ -75,23 +83,24 @@ void checkMove() {
   if (((millis() - lastMoveStatus) > 1000) && change) {
     inMove = inMoveCurrent;
     change = false;
+   if(inMove == true) gyroMagni.clear();
   }
   
   inMoveLast = inMoveCurrent;
  
 }
 
+//---------------------------------------------------------
 void record() {
-  
   if(trackMillis == true){
     m = 0;
-    mmCount = 0;
     m = millis();
     trackMillis = false;
   }
   
   if(m + 1 < millis()){
         println("**** RECORDINGs ****");
+         
 
     gyroMagni.add(gyro.mag());
     accelMagni.add(accel.mag()); 
@@ -100,8 +109,8 @@ void record() {
   
 }
 
+//---------------------------------------------------------
 void play() {
-  println("play");
   // myMidiBus.sendControllerChange(1, 20, 200);
   
   if(trackMillis == true){
@@ -114,9 +123,12 @@ void play() {
     if (mmCount > gyroMagni.size()) mmCount = gyroMagni.size()-1;
     if (mmCount < gyroMagni.size()) mmCount++;
     
-    println( gyroMagni.get(mmCount));
-    
+    //println( gyroMagni.get(mmCount));
+    println(mmCount + " von " + gyroMagni.size());
+    println("Value an Stelle: " + mmCount + " :" +   map(gyroMagni.get(mmCount), 500, 40000, 0, 127));
 
+   myMidiBus.sendNoteOn(0, 31,127 );
+   myMidiBus.sendControllerChange(0, 74, (int)map(gyroMagni.get(mmCount), 500, 40000, 0, 127));
     
     /*
     myMidiBus.sendNoteOn(0, 31, 127);
@@ -136,6 +148,7 @@ void play() {
   
 }
 
+//---------------------------------------------------------
 void serialEvent(Serial myXbeePort) // Is called everytime there is new data to read
 {
   if (myXbeePort.available() == 22)
@@ -161,6 +174,7 @@ void serialEvent(Serial myXbeePort) // Is called everytime there is new data to 
   }
 }
 
+//---------------------------------------------------------
 void drawGraph(int x, int y)
 {
   fill(255);
@@ -188,6 +202,7 @@ void drawGraph(int x, int y)
 
 }
 
+//---------------------------------------------------------
 void keyPressed()
 {
   switch(key)
