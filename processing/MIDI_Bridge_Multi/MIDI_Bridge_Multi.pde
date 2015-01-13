@@ -14,6 +14,8 @@ PVector[] gyro = new PVector[5];  // Variable to store Gyroscope Data
 int[][] adc = new int[5][4];    // Variable to store Analog Data
 
 boolean[] record = new boolean[5];
+int[] lastSave = new int[5];
+
 
 void setup()
 {
@@ -23,6 +25,8 @@ void setup()
   {
     accel[i] = new PVector(0,0);
     gyro[i] = new PVector(0,0);
+    record[i] = false;
+    lastSave[i] = 0;
   }
   
   println(Serial.list()); // Prints the list of serial available devices (Arduino should be on top of the list)
@@ -38,7 +42,7 @@ void draw()
   background(0);
   int y = 20;
   for (int i = 2; i < 5; i++) {
-    // calcValue(i);
+    prepare(i);
     drawGraph(i, width/2, y);
     // myMidiBus.sendControllerChange(1, 20, int(map(gyro[i].x, -32768, +32767, 0, 127)));
     
@@ -47,8 +51,11 @@ void draw()
   
 }
 
-void calcValue() {
-  
+void prepare(i) {
+ 
+  if (record[i]) {
+    if (
+  }
 }
 
 void serialEvent(Serial myXbeePort) // Is called everytime there is new data to read
