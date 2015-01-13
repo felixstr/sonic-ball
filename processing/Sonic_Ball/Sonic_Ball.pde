@@ -28,7 +28,8 @@ void setup()
   size(500, 500);
 
   println(Serial.list()); // Prints the list of serial available devices (Arduino should be on top of the list)
-  myXbeePort = new Serial(this, "/dev/tty.Bluetooth-Incoming-Port", 38400); // Open a new port and connect with Arduino at 38400 baud
+  myXbeePort = new Serial(this, Serial.list()[5], 38400); // Open a new port and connect with Arduino at 38400 baud
+  Serial.list();
   myXbeePort.buffer(22);
 
   MidiBus.list(); // List all available Midi devices
@@ -45,8 +46,11 @@ void draw()
   checkMove(); // is ball moving? (inMove)
   if (inMove) {
     record();
+    println("**** RECORDINGs ****");
   } else {
     play();
+    println("**** PLAYING ****");
+    
   }
 }
 
@@ -102,9 +106,6 @@ void record() {
    trackMillis = false;
   }
   
-  
-  
-
 }
 
 void play() {}
