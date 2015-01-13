@@ -13,7 +13,6 @@ int xbeeAddress = 0;           // The Address we are listening to
 
 PVector accel = new PVector(); // Variable to store Accelerometer Data
 PVector gyro = new PVector();  // Variable to store Gyroscope Data
-int[] adc = new int[4];    // Variable to store Analog Data
 
 void setup()
 {
@@ -55,12 +54,6 @@ void serialEvent(Serial myXbeePort) // Is called everytime there is new data to 
       gyro.y = int(0.8*gyro.y + 0.2*(int)((inBuffer[9] << 8) | (inBuffer[8] & 0xff)));
       gyro.z = int(0.8*gyro.z + 0.2*(int)((inBuffer[11] << 8) | (inBuffer[10] & 0xff)));
 
-
-      //Assign the values for the Analog Pins
-      adc[0] = int(0.8*adc[0] + 0.2*(int)((inBuffer[13] << 8) | (inBuffer[12] & 0xff)));
-      adc[1] = int(0.8*adc[1] + 0.2*(int)((inBuffer[15] << 8) | (inBuffer[14] & 0xff)));
-      adc[2] = int(0.8*adc[2] + 0.2*(int)((inBuffer[17] << 8) | (inBuffer[16] & 0xff)));
-      adc[3] = int(0.8*adc[3] + 0.2*(int)((inBuffer[19] << 8) | (inBuffer[18] & 0xff)));
     }
   }
 }
@@ -83,15 +76,7 @@ void drawGraph(int x, int y)
   rect(x, y+=10, map(gyro.y, -32768, +32767, -64, 63), 10);
   text("Gyro Z  "+gyro.z, x-width/2+10, y+20); 
   rect(x, y+=10, map(gyro.z, -32768, +32767, -64, 63), 10);
-  y+=20;
-  text("ADC 0  "+adc[0], x-width/2+10, y+20); 
-  rect(x, y+=10, map(adc[0], 0, 1023, 0, 127), 10);
-  text("ADC 1  "+adc[1], x-width/2+10, y+20); 
-  rect(x, y+=10, map(adc[1], 0, 1023, 0, 127), 10);
-  text("ADC 2  "+adc[2], x-width/2+10, y+20); 
-  rect(x, y+=10, map(adc[2], 0, 1023, 0, 127), 10);
-  text("ADC 3  "+adc[3], x-width/2+10, y+20); 
-  rect(x, y+=10, map(adc[3], 0, 1023, 0, 127), 10);
+
 }
 
 void keyPressed()
