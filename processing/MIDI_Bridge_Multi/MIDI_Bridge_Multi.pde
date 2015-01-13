@@ -70,6 +70,7 @@ void serialEvent(Serial myXbeePort) // Is called everytime there is new data to 
         accel[xbeeAddress].y = int(0.8*accel[xbeeAddress].y + 0.2*(int)((inBuffer[3] << 8) | (inBuffer[2] & 0xff)));
         accel[xbeeAddress].z = int(0.8*accel[xbeeAddress].z + 0.2*(int)((inBuffer[5] << 8) | (inBuffer[4] & 0xff)));
         
+        
         //Assign the values for the Gyroscope
         gyro[xbeeAddress].x = int(0.8*gyro[xbeeAddress].x + 0.2*(int)((inBuffer[7] << 8) | (inBuffer[6] & 0xff)));
         gyro[xbeeAddress].y = int(0.8*gyro[xbeeAddress].y + 0.2*(int)((inBuffer[9] << 8) | (inBuffer[8] & 0xff)));

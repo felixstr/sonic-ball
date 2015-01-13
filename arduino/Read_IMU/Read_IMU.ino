@@ -38,7 +38,7 @@ void setup()
 
 void loop() 
 {
-  int16_t ax, ay, az, gx, gy, gz = 0;
+  int16_t ax, ay, az, gx, gy, gz,g = 0;
   int16_t adc0, adc1, adc2, adc3 = 0;
 
   //If MPU6050 is attached, read the acceleromter and gyroscope values
@@ -50,6 +50,9 @@ void loop()
   adc2 = analogRead(2);
   adc3 = analogRead(3);
 */
+  g = (gx*gx) + (gy*gy) + (gz*gz);
+  
+//-------------------------------------------------------------
   //Sending start byte 
   Serial.write(0x7e); 
   //Sending Address
@@ -63,6 +66,9 @@ void loop()
   //Sending accelerometer Z
   Serial.write((az >> 8) & 0xff); Serial.write(az & 0xff);
   //Sending gyroscope X
+  //Sending Magnetute
+  
+//-------------------------------------------------------------
   Serial.write((gx >> 8) & 0xff); Serial.write(gx & 0xff);
   //Sending gyroscope Y
   Serial.write((gy >> 8) & 0xff); Serial.write(gy & 0xff);
