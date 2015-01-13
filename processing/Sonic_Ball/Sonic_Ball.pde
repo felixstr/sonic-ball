@@ -21,6 +21,8 @@ boolean trackMillis = true;
 ArrayList<Float> gyroMagni = new ArrayList<Float>();
 ArrayList<Float> accelMagni = new ArrayList<Float>();
 int m;
+int mm;
+int mmCount = 0;
 
 //------------------ End Record Movements --------------------
 void setup()
@@ -28,7 +30,7 @@ void setup()
   size(500, 500);
 
   println(Serial.list()); // Prints the list of serial available devices (Arduino should be on top of the list)
-  myXbeePort = new Serial(this, Serial.list()[5], 38400); // Open a new port and connect with Arduino at 38400 baud
+  myXbeePort = new Serial(this, Serial.list()[Serial.list().length-1], 38400); // Open a new port and connect with Arduino at 38400 baud
   Serial.list();
   myXbeePort.buffer(22);
 
@@ -40,7 +42,7 @@ void draw()
 {
   background(0);
   drawGraph(width/2, 10);
-  myMidiBus.sendControllerChange(1, 20, int(map(gyro.y, -32768, +32767, 0, 127)));
+  // myMidiBus.sendControllerChange(1, 20, int(map(gyro.y, -32768, +32767, 0, 127)));
   
   
   checkMove(); // is ball moving? (inMove)
@@ -59,43 +61,34 @@ boolean  inMoveLast = false;
 boolean  moveChangeFlag = true;
 boolean change = false;
 
-
-
-
-
-
 void checkMove() {
   float mag = gyro.mag();
   println(mag);
   
-  boolean inMoveCurrent = (mag > 300);
-  inMove = inMoveCurrent;
+  boolean inMoveCurrent = (mag > 1000);
+  // inMove = inMoveCurrent;
   
-  /*
-  boolean inMoveCurrent = (mag > 5000);
-  println("inMoveCurrent: "+inMoveCurrent);
-  println("inMove: "+inMove);
-  
-  if ((inMoveLast && !inMoveCurrent) || (!inMoveLast && inMoveCurrent)) {
+  if ((inMoveLast && !inMoveCurrent) || (!inMoveLast && inMoveCurrent)) {
     change = true;
     lastMoveStatus = millis();
   }
   println("lastMoveStatus: "+lastMoveStatus);
   println("change: "+change);
   
-  if (((millis() - lastMoveStatus) > 5000) && change) {
-    inMove = !inMove;
+  if (((millis() - lastMoveStatus) > 1000) && change) {
+    inMove = inMoveCurrent;
     change = false;
   }
   
   inMoveLast = inMoveCurrent;
-  */
+ 
 }
 
 void record() {
   
   if(trackMillis == true){
     m = 0;
+    mmCount = 0;
     m = millis();
     trackMillis = false;
   }
@@ -108,7 +101,38 @@ void record() {
   
 }
 
-void play() {}
+void play() {
+  println("play");
+  // myMidiBus.sendControllerChange(1, 20, 200);
+  
+  if(trackMillis == true){
+    mm = 0;
+    mm = millis();
+    trackMillis = false;
+  }
+  
+  if(m + 1 == millis()){
+    if (mmCount >= gyroMagni.size()) {
+      mmCount = gyroMagni.size()-1;
+    } else {
+      mmCount++;
+    }
+    println(gyroMagni[mmCount]);
+    /*
+    myMidiBus.sendNoteOn(0, 31, 127);
+    myMidiBus.sendControllerChange(0, 74, map(gyroMagni[mmCount], ));
+    gyroMagni[]
+    accelMagni.add(accel.mag()); 
+     trackMillis = false;
+     */
+  }
+  
+  myMidiBus.sendNoteOn(0, 31, 127);
+  delay(200);
+  myMidiBus.sendNoteOff(0, 31, 127);
+  delay(200);
+  
+}
 
 void serialEvent(Serial myXbeePort) // Is called everytime there is new data to read
 {
