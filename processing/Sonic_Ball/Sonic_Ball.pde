@@ -15,13 +15,20 @@ PVector accel = new PVector(); // Variable to store Accelerometer Data
 PVector gyro = new PVector();  // Variable to store Gyroscope Data
 
 boolean inMove = false;
+boolean trackMillis = true;
 
+//------------------ Record Movements --------------------
+ArrayList<Float> gyroMagni = new ArrayList<Float>();
+ArrayList<Float> accelMagni = new ArrayList<Float>();
+int m;
+
+//------------------ End Record Movements --------------------
 void setup()
 {
   size(500, 500);
 
   println(Serial.list()); // Prints the list of serial available devices (Arduino should be on top of the list)
-  myXbeePort = new Serial(this, "/dev/tty.usbserial-A403993N", 38400); // Open a new port and connect with Arduino at 38400 baud
+  myXbeePort = new Serial(this, "/dev/tty.Bluetooth-Incoming-Port", 38400); // Open a new port and connect with Arduino at 38400 baud
   myXbeePort.buffer(22);
 
   MidiBus.list(); // List all available Midi devices
@@ -47,6 +54,11 @@ int lastMoveStatus = 0;
 boolean  inMoveLast = false;
 boolean  moveChangeFlag = true;
 boolean change = false;
+
+
+
+
+
 
 void checkMove() {
   float mag = gyro.mag();
@@ -76,7 +88,24 @@ void checkMove() {
   */
 }
 
-void record() {}
+void record() {
+  
+  if(trackMillis == true){
+    m = 0;
+    m = millis();
+    trackMillis = false;
+  }
+  
+  if(m + 1 == millis()){
+    gyroMagni.add(gyro.mag());
+    accelMagni.add(accel.mag()); 
+   trackMillis = false;
+  }
+  
+  
+  
+
+}
 
 void play() {}
 
@@ -124,6 +153,7 @@ void drawGraph(int x, int y)
   rect(x, y+=10, map(gyro.y, -32768, +32767, -64, 63), 10);
   text("Gyro Z  "+gyro.z, x-width/2+10, y+20); 
   rect(x, y+=10, map(gyro.z, -32768, +32767, -64, 63), 10);
+  
   text("Gyro Mag  "+gyro.mag(), x-width/2+10, y+20);
   
   y+=20;
@@ -144,4 +174,9 @@ void keyPressed()
     break;
   }
 }
+
+
+
+
+
 
