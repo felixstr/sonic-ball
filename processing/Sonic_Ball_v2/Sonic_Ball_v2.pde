@@ -25,7 +25,7 @@ int mm;
 int mmCount = 0;
 boolean bREC = true;
 
-int recordingMillisStep = 200;
+int recordingMillisStep = 15;
 int recordCounter = 0;
 int playCounter = 0;
 //------------------ End Record Movements --------------------
@@ -171,7 +171,7 @@ void play()  {
       println("Accel Value an Stelle: " + mmCount + " :" +   map(accelMagni.get(mmCount), 5000, 45000, 0, 127));
 
 
-      myMidiBus.sendControllerChange(0, 74, (int)map(gyroMagni.get(mmCount), 800, 35000, 0, 127));
+      myMidiBus.sendControllerChange(0, 74, (int)map(gyroMagni.get(mmCount), 12000, 35000, 0, 127));
       myMidiBus.sendControllerChange(0, 75, (int)map(accelMagni.get(mmCount), 7000, 45000, 0, 127));
       
       playCounter++;
@@ -220,7 +220,7 @@ void drawGraph(int x, int y)
   rect(x, y+=10, map(accel.z, -32768, +32767, -64, 63), 10);
 
   text("Accel Mag  "+accel.mag(), x-width/2+10, y+20);
-  
+  /*
   if (accel.mag() < lowestValue) { 
     lowestValue = accel.mag();
   }
@@ -229,7 +229,7 @@ void drawGraph(int x, int y)
     highestValue = accel.mag();
   }
   println("highestValue  "+highestValue);
-  
+  */
   
   
   
