@@ -29,6 +29,9 @@ int recordingMillisStep = 15;
 int recordCounter = 0;
 int playCounter = 0;
 int playRound = 0;
+float roundDuration = 0;
+float roundAverageGyro = 0;
+float roundAverageAccel = 0;
 //------------------ End Record Movements --------------------
 
 //------------------ Check Movement --------------------
@@ -36,7 +39,7 @@ int lastMoveStatus = 0;
 boolean  inMoveLast = false;
 boolean  moveChangeFlag = true;
 boolean change = false;
-int waitTime = 500;
+int waitTime = 300;
 //------------------ END Check Movement --------------------
 
 //--------------------------------------------------------
@@ -74,8 +77,8 @@ void draw()
 //---------------------------------------------------------
 
 /**
-* ueberprueft ob ball in bewegung ist
-*/
+ * ueberprueft ob ball in bewegung ist
+ */
 void checkMove() {
   float mag = gyro.mag();
   int tolerance = 1000;
@@ -114,7 +117,7 @@ void prepareRecord() {
   myMidiBus.sendNoteOff(0, 31, 127 );
   myMidiBus.sendNoteOff(0, 31, 127 );
   myMidiBus.sendNoteOff(0, 31, 127 );
-  
+
   recordCounter = 0;
   gyroMagni.clear();
   accelMagni.clear();
@@ -125,7 +128,25 @@ void prepareRecord() {
  */
 void preparePlay() {
   println("**** PLAYING ****");
-  
+
+  // round duration
+  roundDuration = (gyroMagni.size()*recordingMillisStep);  
+  roundDuration = roundDuration/1000;
+
+  // round gyro average
+  int sum = 0;
+  for (int i = 0; i < gyroMagni.size(); i++) {
+    sum += gyroMagni.get(i);
+  }
+  roundAverageGyro = sum/gyroMagni.size();
+
+  // round accel average
+  sum = 0;
+  for (int i = 0; i < accelMagni.size(); i++) {
+    sum += accelMagni.get(i);
+  }
+  roundAverageAccel = sum/accelMagni.size();
+
   playRound = 0;
   mmCount = 0;
   myMidiBus.sendNoteOn(0, 31, 127 );
@@ -145,7 +166,7 @@ void record() {
 
     gyroMagni.add(gyro.mag());
     accelMagni.add(accel.mag()); 
-    
+
     recordCounter++;
   }
 }
@@ -158,7 +179,7 @@ void record() {
 
 void play()  {
   if (gyroMagni.size() > 0) {
-  
+
     if (trackMillis == true) {
       m = millis();
       trackMillis = false;
@@ -172,14 +193,14 @@ void play()  {
       if (mmCount < gyroMagni.size()) mmCount++;
 
       //println( gyroMagni.get(mmCount));
-      println(mmCount + " von " + (gyroMagni.size()-1));
-      println("Gyro Value an Stelle: " + mmCount + " :" +   map(gyroMagni.get(mmCount), 800, 40000, 0, 127));
-      println("Accel Value an Stelle: " + mmCount + " :" +   map(accelMagni.get(mmCount), 5000, 45000, 0, 127));
+      // println(mmCount + " von " + (gyroMagni.size()-1));
+      // println("Gyro Value an Stelle: " + mmCount + " :" +   map(gyroMagni.get(mmCount), 800, 40000, 0, 127));
+      // println("Accel Value an Stelle: " + mmCount + " :" +   map(accelMagni.get(mmCount), 5000, 45000, 0, 127));
 
 
       myMidiBus.sendControllerChange(0, 74, (int)map(gyroMagni.get(mmCount), 12000, 35000, 0, 127));
       myMidiBus.sendControllerChange(0, 75, (int)map(accelMagni.get(mmCount), 7000, 45000, 0, 127));
-      
+
       playCounter++;
     }
   }
@@ -228,17 +249,17 @@ void drawGraph(int x, int y)
   text("Accel Mag  "+accel.mag(), x-width/2+10, y+20);
   /*
   if (accel.mag() < lowestValue) { 
-    lowestValue = accel.mag();
-  }
-  println("lowestValue  "+lowestValue);
-  if (accel.mag() > highestValue) { 
-    highestValue = accel.mag();
-  }
-  println("highestValue  "+highestValue);
-  */
-  
-  
-  
+   lowestValue = accel.mag();
+   }
+   println("lowestValue  "+lowestValue);
+   if (accel.mag() > highestValue) { 
+   highestValue = accel.mag();
+   }
+   println("highestValue  "+highestValue);
+   */
+
+
+
   y+=20;
   text("Gyro X  "+gyro.x, x-width/2+10, y+20); 
   rect(x, y+=10, map(gyro.x, -32768, +32767, -64, 63), 10);
@@ -250,19 +271,26 @@ void drawGraph(int x, int y)
   text("Gyro Mag  "+gyro.mag(), x-width/2+10, y+20);
   /*
   if (gyro.mag() < lowestValue) { 
-    lowestValue = gyro.mag();
-  }
-  println("lowestValue  "+lowestValue);
-  if (gyro.mag() > highestValue) { 
-    highestValue = gyro.mag();
-  }
-  println("highestValue  "+highestValue);
-  */ 
-  
-  y+=20;
+   lowestValue = gyro.mag();
+   }
+   println("lowestValue  "+lowestValue);
+   if (gyro.mag() > highestValue) { 
+   highestValue = gyro.mag();
+   }
+   println("highestValue  "+highestValue);
+   */
+
+  y+=40;
   text("Moving: "+(inMove ? "true" : "false"), x-width/2+10, y+20);
   y+=20;
   text("Play Round: "+playRound, x-width/2+10, y+20);
+  y+=40;
+  text("Round Duration: "+roundDuration+" Seconds", x-width/2+10, y+20);
+  y+=20;
+  text("Round Average Accel: "+roundAverageAccel, x-width/2+10, y+20);
+  y+=20;
+  text("Round Average Gyro: "+roundAverageGyro, x-width/2+10, y+20);
+  
 }
 
 //---------------------------------------------------------
@@ -278,7 +306,6 @@ void keyPressed()
     break;
   }
 }
-
 
 
 
