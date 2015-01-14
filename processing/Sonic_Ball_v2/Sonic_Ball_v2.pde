@@ -28,6 +28,7 @@ boolean bREC = true;
 int recordingMillisStep = 15;
 int recordCounter = 0;
 int playCounter = 0;
+int playRound = 0;
 //------------------ End Record Movements --------------------
 
 //------------------ Check Movement --------------------
@@ -114,6 +115,7 @@ void prepareRecord() {
   myMidiBus.sendNoteOff(0, 31, 127 );
   myMidiBus.sendNoteOff(0, 31, 127 );
   
+  recordCounter = 0;
   gyroMagni.clear();
   accelMagni.clear();
 } 
@@ -124,6 +126,7 @@ void prepareRecord() {
 void preparePlay() {
   println("**** PLAYING ****");
   
+  playRound = 0;
   mmCount = 0;
   myMidiBus.sendNoteOn(0, 31, 127 );
 }
@@ -162,7 +165,10 @@ void play()  {
     }
 
     if (m + (recordingMillisStep*playCounter) < millis()) {
-      if (mmCount >= gyroMagni.size()-1) mmCount = 0;
+      if (mmCount >= gyroMagni.size()-1) {
+        mmCount = 0;
+        playRound++;
+      }
       if (mmCount < gyroMagni.size()) mmCount++;
 
       //println( gyroMagni.get(mmCount));
@@ -255,6 +261,8 @@ void drawGraph(int x, int y)
   
   y+=20;
   text("Moving: "+(inMove ? "true" : "false"), x-width/2+10, y+20);
+  y+=20;
+  text("Play Round: "+playRound, x-width/2+10, y+20);
 }
 
 //---------------------------------------------------------
