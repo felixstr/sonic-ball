@@ -200,6 +200,8 @@ void play()  {
 
       myMidiBus.sendControllerChange(0, 74, (int)map(gyroMagni.get(mmCount), 12000, 35000, 0, 127));
       myMidiBus.sendControllerChange(0, 75, (int)map(accelMagni.get(mmCount), 7000, 45000, 0, 127));
+      // println(roundDuration);
+      myMidiBus.sendControllerChange(0, 76, (int)map(roundDuration, 1, 30, 0, 127));
 
       playCounter++;
     }
